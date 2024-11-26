@@ -3,7 +3,9 @@ name: Build and Release Firecracker Binary
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'   
+    branches:
+      - main
 
 jobs:
   build:
