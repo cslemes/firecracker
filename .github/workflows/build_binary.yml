@@ -19,7 +19,7 @@ jobs:
 
       - name: Build binary
         run: |
-          cd firecracker
+          cd src/firecracker
           tools/devtool build
 
       - name: Upload binary artifact
