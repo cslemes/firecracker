@@ -1,0 +1,49 @@
+name: Build and Release Firecracker Binary
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up toolchain
+        run: echo "toolchain=$(uname -m)-unknown-linux-musl" >> $GITHUB_ENV
+
+      - name: Build binary
+        run: |
+          cd firecracker
+          tools/devtool build
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firecracker-binary
+          path: firecracker/build/${{ env.toolchain }}/release
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download binary artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: firecracker-binary
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            Release for Firecracker ${{ github.ref_name }}.
+          draft: false
+          prerelease: false
+          files: firecracker/build/${{ env.toolchain }}/release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
